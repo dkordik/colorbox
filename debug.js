@@ -46,6 +46,8 @@ imageUrl = "http://a2.mzstatic.com/us/r30/Music/v4/ca/07/78/ca077842-b7e6-48d7-6
 imageUrl = "http://a3.mzstatic.com/us/r30/Music6/v4/44/68/42/4468426b-e5b3-ba9d-c5be-d6b1473c4e18/FCL99_1600.1200x1200-75.jpg";
 imageUrl = "http://a1.mzstatic.com/us/r30/Music/v4/cd/b0/a3/cdb0a392-716b-554c-d851-a76837208439/656605512662.1200x1200-75.jpg";
 imageUrl = "http://a4.mzstatic.com/us/r30/Music2/v4/39/f4/b5/39f4b5d4-ac76-c9f8-f2a4-b9171ad8a7ec/cover1200x1200.jpeg";
+imageUrl = "http://a2.mzstatic.com/us/r30/Music7/v4/bf/fb/06/bffb06e6-9ce7-845b-095a-60fc180bc219/cover1200x1200.jpeg";
+imageUrl = "http://a2.mzstatic.com/us/r30/Music3/v4/a8/15/1d/a8151d4b-031f-58de-22b6-e075574d3355/cover1200x1200.jpeg";
 
 ColorBox.requestDominantColorsFromImageByUrl(imageUrl, function(colors) {
 	ColorBoxDebug.renderTestbed(imageUrl, colors);

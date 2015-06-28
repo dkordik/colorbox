@@ -96,10 +96,11 @@ var ColorBox = {
 
 	getBaseAndAccentColor: function(colors) {
 		var baseColor = ColorBox.getFirstFrequentColor(colors);
-		var accentColor = ColorBox.sortByLumSat(colors).filter(function (color) {
+		var colorsByLumSat = ColorBox.sortByLumSat(colors);
+		var accentColor = colorsByLumSat.filter(function (color) {
 			//filter to next best color that's different
 			return ColorBox.getColorType(color) != ColorBox.getColorType(baseColor);
-		})[0];
+		})[0] || colorsByLumSat[0]; //fallback to top color
 
 		return [ baseColor, accentColor ];
 	},
