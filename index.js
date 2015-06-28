@@ -12,7 +12,7 @@ var ColorBox = {
 		return Math.max.apply(null, arr);
 	},
 
-	whatColorAmI: function(rgb) {
+	getColorType: function(rgb) {
 		//TODO: increase granularity to include CMY, beyond
 		var RGB = { 0: "R", 1: "G", 2: "B" };
 		var index = rgb.indexOf( ColorBox.maxVal(rgb) );
@@ -38,13 +38,17 @@ var ColorBox = {
 		});
 	},
 
+	isGrayish: function(rgb) {
+		return (ColorBox.minVal(bestColor) + 5)> ColorBox.maxVal(bestColor);
+	},
+
 	getMostFrequentColorType: function(colors) {
 		var tally = {};
 		var count = 0;
 		var mostCommon = "";
 
 		colors.forEach(function(color) {
-			var val = ColorBox.whatColorAmI(color);
+			var val = ColorBox.getColorType(color);
 			if (!tally[val]) {
 				tally[val] = 1;
 			} else {
@@ -62,15 +66,15 @@ var ColorBox = {
 	},
 
 	getFirstFrequentColor: function(colors) {
-		var mostFrequentColor = ColorBox.getMostFrequentColorType(colors);
+		var mostFrequentColorType = ColorBox.getMostFrequentColorType(colors);
 		var firstFrequentColor = colors.filter(function(color) {
-			return ColorBox.whatColorAmI(color) == mostFrequentColor;
+			return ColorBox.getColorType(color) == mostFrequentColorType;
 		})[0];
 
 		return firstFrequentColor;
 	},
 
-	getDominantColorsFromImageByUrl: function(imageUrl, callback) {
+	requestDominantColorsFromImageByUrl: function(imageUrl, callback) {
 		request(imageUrl)
 		.pipe(fs.createWriteStream('.temp'))
 		.on('close', function() {
@@ -90,21 +94,21 @@ var ColorBox = {
 		});
 	},
 
-	//putting it all together...
 	getBaseAndAccentColor: function(colors) {
-		var colorsByLumSat = ColorBox.sortByLumSat(colors);
 		var baseColor = ColorBox.getFirstFrequentColor(colors);
-
 		var accentColor = ColorBox.sortByLumSat(colors).filter(function (color) {
 			//filter to next best color that's different
-			return ColorBox.whatColorAmI(color) != ColorBox.whatColorAmI(baseColor);
+			return ColorBox.getColorType(color) != ColorBox.getColorType(baseColor);
 		})[0];
 
 		return [ baseColor, accentColor ];
 	},
 
-	isGrayish: function(rgb) {
-		return (ColorBox.minVal(bestColor) + 5)> ColorBox.maxVal(bestColor);
+	requestBaseAndAccentColorFromImageByUrl: function (imageUrl, callback) {
+		ColorBox.requestDominantColorsFromImageByUrl(imageUrl, function (colors) {
+			var baseAndAccentColor = ColorBox.getBaseAndAccentColor(colors);
+			callback(baseAndAccentColor);
+		});
 	}
 }
 
