@@ -1,4 +1,6 @@
 var fs = require('fs');
+var request = require('request');
+var imagemagick = require('imagemagick-native')
 
 var ColorBox = {
 
@@ -79,6 +81,26 @@ var ColorBox = {
 		return firstFrequentColor;
 	},
 
+	getDominantColorsFromImageByUrl: function(imageUrl, callback) {
+		request(imageUrl)
+		.pipe(fs.createWriteStream('.temp'))
+		.on('close', function() {
+			fs.readFile('.temp', function (err, data) {
+				if (err) throw err;
+
+				var quantizedColors = imagemagick.quantizeColors({
+					srcData: data,
+					colors: 256
+				}).map(function(color) {
+					return [ color.r, color.g, color.b ]
+				});
+				if (callback) {
+					callback(quantizedColors);
+				}
+			});
+		});
+	},
+
 	//putting it all together...
 	getBaseAndAccentColor: function(colors) {
 		var colorsByLumSat = ColorBox.sortByLumSat(colors);
@@ -122,19 +144,12 @@ var ColorBox = {
 	}
 }
 
-var colors = [[47, 61, 31],
-[24, 36, 18], [4, 8, 3], [23, 32, 19], [97, 100, 66], [38, 46, 22], [65, 72, 40],
-[9, 17, 8], [25, 32, 11], [17, 24, 10], [15, 18, 12], [100, 25, 16], [75, 84, 40],
-[6, 15, 4], [40, 60, 11], [158, 150, 115]];
+var imageUrl;
+imageUrl = "https://consequenceofsound.files.wordpress.com/2015/02/braids-deep-in-the-iris.jpg?w=806&h=806";
 
+ColorBox.getDominantColorsFromImageByUrl(imageUrl, function(colors) {
+	ColorBox.renderTestbed(imageUrl, colors);
+}); 
 
-
-ColorBox.getFirstFrequentColor(colors);
-
-// ColorBox.sortByLumSat(colors);
-
-var imageUrl = "https://consequenceofsound.files.wordpress.com/2015/02/braids-deep-in-the-iris.jpg?w=806&h=806";
-
-ColorBox.renderTestbed(imageUrl, colors);
 
 
