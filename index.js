@@ -19,17 +19,6 @@ var ColorBox = {
 		return RGB[index];
 	},
 
-	renderColor: function(rgb, customText) {
-		return "<div style='background-color:rgb("+
-			rgb[0]+","+rgb[1]+","+rgb[2]+
-		")'>"+
-		ColorBox.whatColorAmI(rgb)+ " " +
-			"<span class='metadata'>" +
-				(customText == undefined ? "" : customText) +
-			"</span>" +
-		"</div>";
-	},
-
 	getLumSatValue:  function(rgb) {
 		var luminosity = ColorBox.maxVal(rgb);
 		var saturation = (luminosity - ColorBox.minVal(rgb)) / luminosity;
@@ -40,8 +29,8 @@ var ColorBox = {
 		}
 	},
 
-	//sort by unique
-	//sort by most common color
+	//TODO: sort by unique
+	//TODO: sort by most common color
 
 	sortByLumSat: function(colors) {
 		return colors.slice(0).sort(function (a, b) {
@@ -104,7 +93,7 @@ var ColorBox = {
 	//putting it all together...
 	getBaseAndAccentColor: function(colors) {
 		var colorsByLumSat = ColorBox.sortByLumSat(colors);
-		var baseColor = ColorBox.getFirstFrequentColor(colors);//colors[0]; //colorsByLumSat[0];
+		var baseColor = ColorBox.getFirstFrequentColor(colors);
 
 		var accentColor = ColorBox.sortByLumSat(colors).filter(function (color) {
 			//filter to next best color that's different
@@ -116,40 +105,9 @@ var ColorBox = {
 
 	isGrayish: function(rgb) {
 		return (ColorBox.minVal(bestColor) + 5)> ColorBox.maxVal(bestColor);
-	},
-
-	renderTestbed: function(imageUrl, colors) {
-		var contents = "<html><head>"+
-			"<style>"+
-			" body {color:#fff; font-size: 13px; font-family: Arial; margin: 0; max-width: 200px; }"+
-			" div { padding: 6px; }"+
-			" img { width: 100%; }"+
-			" .metadata { font-size: 0.7em; text-transform: uppercase; opacity:0.3; }"+
-			"</style>"+
-			"</head><body>" +
-			"<img src='" + imageUrl + "'>" +
-			ColorBox.getBaseAndAccentColor(colors).map(function (color, i) {
-				var text = (i == 0 ? "base color" : "accent color")
-				return ColorBox.renderColor(color, text);
-			}).join("") +
-			"<br/>" +
-			colors.map(ColorBox.renderColor).join("") +
-			"</body></html>"
-
-		fs.writeFile("./index.html", contents, function(err) {
-			if (err) return console.log(err);
-			console.log("Rendered.");
-		});
-
 	}
 }
 
-var imageUrl;
-imageUrl = "https://consequenceofsound.files.wordpress.com/2015/02/braids-deep-in-the-iris.jpg?w=806&h=806";
-
-ColorBox.getDominantColorsFromImageByUrl(imageUrl, function(colors) {
-	ColorBox.renderTestbed(imageUrl, colors);
-}); 
-
+module.exports = ColorBox;
 
 
