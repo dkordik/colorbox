@@ -120,7 +120,7 @@ var ColorBox = {
 	},
 
 	requestBaseAndAccentColorFromImageByUrl: function (imageUrl, callback) {
-		ColorBox.requestDominantColorsFromImageByUrl(imageUrl, function (colors) {
+		ColorBox.requestDominantColorsFromImageByUrl(imageUrl, function (err, colors) {
 			var baseAndAccentColor = ColorBox.getBaseAndAccentColor(colors);
 			callback(baseAndAccentColor);
 		});
