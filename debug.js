@@ -22,7 +22,9 @@ var ColorBoxDebugger = {
 				return ColorBoxDebugger.renderColor(color, text);
 			}).join("") +
 			"<br/>" +
+			"<span class='allcolors'>" +
 			colors.map(ColorBoxDebugger.renderColor).join("") +
+			"</span>" +
 		"</div>"
 	},
 
@@ -34,7 +36,10 @@ var ColorBoxDebugger = {
 			" div { padding: 6px; }"+
 			" img { width: 100%; }"+
 			" .col { display: inline-block; max-width: 200px; }"+
-			" .metadata { font-size: 0.7em; text-transform: uppercase; opacity:0.3; }"+
+			" .metadata { font-size: 0.8em; text-transform: uppercase; opacity:0.3; }"+
+			" .allcolors div { width: 10px; display: inline-block; text-align: center; }"+
+			" .allcolors { max-width: 100%; white-space: normal; }"+
+			" .allcolors .metadata { font-size: 0.5em; }"+
 			"</style>"+
 			"</head><body>";
 		var unresolvedImages = imageUrls.length;
