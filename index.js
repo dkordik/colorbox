@@ -1,6 +1,7 @@
 var fs = require('fs');
 var request = require('request');
-var imagemagick = require('imagemagick-native')
+var imagemagick = require('imagemagick-native');
+var crypto = require('crypto');
 
 var ColorBox = {
 
@@ -13,13 +14,17 @@ var ColorBox = {
 	},
 
 	getColorType: function(rgb) {
-		//TODO: increase granularity to include CMY, beyond
+		//TODO: increase granularity to include CMY?
+		var min = ColorBox.minVal(rgb);
+		var max = ColorBox.maxVal(rgb);
+		//init to RGB
 		var RGB = { 0: "R", 1: "G", 2: "B" };
-		var index = rgb.indexOf( ColorBox.maxVal(rgb) );
-		return RGB[index];
+		var colorType = RGB[ rgb.indexOf(max) ];
+
+		return colorType;
 	},
 
-	getLumSatValue:  function(rgb) {
+	getLumSatValue: function(rgb) {
 		var luminosity = ColorBox.maxVal(rgb);
 		var saturation = (luminosity - ColorBox.minVal(rgb)) / luminosity;
 		if ( luminosity == 0 ) {
@@ -29,9 +34,6 @@ var ColorBox = {
 		}
 	},
 
-	//TODO: sort by unique
-	//TODO: sort by most common color
-
 	sortByLumSat: function(colors) {
 		return colors.slice(0).sort(function (a, b) {
 			return ColorBox.getLumSatValue(b) - ColorBox.getLumSatValue(a);
@@ -39,7 +41,7 @@ var ColorBox = {
 	},
 
 	isGrayish: function(rgb) {
-		return (ColorBox.minVal(bestColor) + 5)> ColorBox.maxVal(bestColor);
+		return (ColorBox.minVal(rgb) + 5)> ColorBox.maxVal(rgb);
 	},
 
 	getMostFrequentColorType: function(colors) {
@@ -75,32 +77,44 @@ var ColorBox = {
 	},
 
 	requestDominantColorsFromImageByUrl: function(imageUrl, callback) {
+		var tempFilename = ".temp-" + crypto.createHash('md5').update(imageUrl).digest('hex');
 		request(imageUrl)
-		.pipe(fs.createWriteStream('.temp'))
+		.pipe(fs.createWriteStream(tempFilename))
 		.on('close', function() {
-			fs.readFile('.temp', function (err, data) {
-				if (err) throw err;
+			fs.readFile(tempFilename, function (err, data) {
+				fs.unlink(tempFilename);
 
-				var quantizedColors = imagemagick.quantizeColors({
-					srcData: data,
-					colors: 256
-				}).map(function(color) {
-					return [ color.r, color.g, color.b ]
-				});
-				if (callback) {
-					callback(quantizedColors);
+				if (err) return callback(err);
+
+				try {
+					var quantizedColors = imagemagick.quantizeColors({
+						srcData: data,
+						colors: 256
+					}).map(function(color) {
+						return [ color.r, color.g, color.b ]
+					});
+				} catch (e) {
+					return callback(e);
 				}
+
+				callback(null, quantizedColors);
 			});
 		});
 	},
 
-	getBaseAndAccentColor: function(colors) {
-		var baseColor = ColorBox.getFirstFrequentColor(colors);
+	getBaseColor: function (colors) {
+		return ColorBox.getFirstFrequentColor(colors);
+	},
+
+	getAccentColor: function (colors) {
 		var colorsByLumSat = ColorBox.sortByLumSat(colors);
-		var accentColor = colorsByLumSat.filter(function (color) {
-			//filter to next best color that's different
-			return ColorBox.getColorType(color) != ColorBox.getColorType(baseColor);
-		})[0] || colorsByLumSat[0]; //fallback to top color
+		var baseColor = ColorBox.getBaseColor(colors);
+		return colorsByLumSat[0];
+	},
+
+	getBaseAndAccentColor: function(colors) {
+		var baseColor = ColorBox.getBaseColor(colors);
+		var accentColor = ColorBox.getAccentColor(colors);
 
 		return [ baseColor, accentColor ];
 	},
