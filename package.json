@@ -19,7 +19,7 @@
   "homepage": "https://github.com/dkordik/colorbox",
   "dependencies": {
     "request": "~2.58.0",
-    "imagemagick-native": "~1.7.0"
+    "imagemagick-native": "~1.9.3"
   },
   "devDependencies": {
     "gulp": "~3.9.0",
