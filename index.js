@@ -5,15 +5,15 @@ var crypto = require('crypto');
 
 var ColorBox = {
 
-	minVal: function(arr) {
+	minVal: (arr) => {
 		return Math.min.apply(null, arr);
 	},
 
-	maxVal: function(arr) {
+	maxVal: (arr) => {
 		return Math.max.apply(null, arr);
 	},
 
-	getColorType: function(rgb) {
+	getColorType: (rgb) => {
 		//TODO: increase granularity to include CMY?
 		var min = ColorBox.minVal(rgb);
 		var max = ColorBox.maxVal(rgb);
@@ -24,7 +24,7 @@ var ColorBox = {
 		return colorType;
 	},
 
-	getLumSatValue: function(rgb) {
+	getLumSatValue: (rgb) => {
 		var luminosity = ColorBox.maxVal(rgb);
 		var saturation = (luminosity - ColorBox.minVal(rgb)) / luminosity;
 		if ( luminosity == 0 ) {
@@ -34,22 +34,22 @@ var ColorBox = {
 		}
 	},
 
-	sortByLumSat: function(colors) {
-		return colors.slice(0).sort(function (a, b) {
+	sortByLumSat: (colors) => {
+		return colors.slice(0).sort((a, b) => {
 			return ColorBox.getLumSatValue(b) - ColorBox.getLumSatValue(a);
 		});
 	},
 
-	isGrayish: function(rgb) {
+	isGrayish: (rgb) => {
 		return (ColorBox.minVal(rgb) + 5)> ColorBox.maxVal(rgb);
 	},
 
-	getMostFrequentColorType: function(colors) {
+	getMostFrequentColorType: (colors) => {
 		var tally = {};
 		var count = 0;
 		var mostCommon = "";
 
-		colors.forEach(function(color) {
+		colors.forEach((color) => {
 			var val = ColorBox.getColorType(color);
 			if (!tally[val]) {
 				tally[val] = 1;
@@ -67,66 +67,68 @@ var ColorBox = {
 		return mostCommon;
 	},
 
-	getFirstFrequentColor: function(colors) {
+	getFirstFrequentColor: (colors) => {
 		var mostFrequentColorType = ColorBox.getMostFrequentColorType(colors);
-		var firstFrequentColor = colors.filter(function(color) {
+		var firstFrequentColor = colors.filter((color) => {
 			return ColorBox.getColorType(color) == mostFrequentColorType;
 		})[0];
 
 		return firstFrequentColor;
 	},
 
-	requestDominantColorsFromImageByUrl: function(imageUrl, callback) {
-		var tempFilename = ".temp-" + crypto.createHash('md5').update(imageUrl).digest('hex');
-		request(imageUrl)
-		.pipe(fs.createWriteStream(tempFilename))
-		.on('close', function() {
-			fs.readFile(tempFilename, function (err, data) {
-				fs.unlink(tempFilename);
+	requestDominantColorsFromImageByUrl: (imageUrl) => {
+		return new Promise((resolve, reject) => {
+			var tempFilename = ".temp-" + crypto.createHash('md5').update(imageUrl).digest('hex');
 
-				if (err) return callback(err);
+			request(imageUrl)
+				.pipe(fs.createWriteStream(tempFilename))
+				.on('close', () => {
+					fs.readFile(tempFilename, (err, data) => {
+						fs.unlink(tempFilename);
 
-				try {
-					var quantizedColors = imagemagick.quantizeColors({
-						srcData: data,
-						colors: 256
-					}).map(function(color) {
-						return [ color.r, color.g, color.b ]
+						if (err) {
+							console.error('Error reading image file...', imageUrl, err);
+							reject(err);
+						}
+
+						var quantizedColors = imagemagick.quantizeColors({
+							srcData: data,
+							colors: 256
+						}).map(color => [ color.r, color.g, color.b ]);
+
+						resolve(quantizedColors);
 					});
-				} catch (e) {
-					return callback(e);
-				}
-
-				callback(null, quantizedColors);
-			});
+				});
 		});
 	},
 
-	getBaseColor: function (colors) {
+	getBaseColor: (colors) => {
 		return ColorBox.getFirstFrequentColor(colors);
 	},
 
-	getAccentColor: function (colors) {
+	getAccentColor: (colors) => {
 		var colorsByLumSat = ColorBox.sortByLumSat(colors);
 		var baseColor = ColorBox.getBaseColor(colors);
 		return colorsByLumSat[0];
 	},
 
-	getBaseAndAccentColor: function(colors) {
+	getBaseAndAccentColor: (colors) => {
 		var baseColor = ColorBox.getBaseColor(colors);
 		var accentColor = ColorBox.getAccentColor(colors);
 
 		return [ baseColor, accentColor ];
 	},
 
-	requestBaseAndAccentColorFromImageByUrl: function (imageUrl, callback) {
-		ColorBox.requestDominantColorsFromImageByUrl(imageUrl, function (err, colors) {
-			var baseAndAccentColor = ColorBox.getBaseAndAccentColor(colors);
-			callback(baseAndAccentColor);
-		});
+	requestBaseAndAccentColorFromImageByUrl: (imageUrl) => {
+		return ColorBox.requestDominantColorsFromImageByUrl(imageUrl)
+			.then((colors) => {
+				var baseAndAccentColor = ColorBox.getBaseAndAccentColor(colors);
+				return ColorBox.getBaseAndAccentColor(colors);
+			})
+			.catch((err) => {
+				console.error('Error loading colors from image. err:', err);
+			});
 	}
 }
 
 module.exports = ColorBox;
-
-

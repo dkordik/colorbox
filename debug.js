@@ -3,7 +3,7 @@ var ColorBox = require("./index");
 
 var ColorBoxDebugger = {
 
-	renderColor: function(rgb, customText) {
+	renderColor: (rgb, customText) => {
 		return "<div style='background-color:rgb("+
 			rgb[0]+","+rgb[1]+","+rgb[2]+
 		")'>"+
@@ -14,10 +14,10 @@ var ColorBoxDebugger = {
 		"</div>";
 	},
 
-	renderTestColumn: function (imageUrl, colors) {
+	renderTestColumn: (imageUrl, colors) => {
 		return "<div class='col'>" +
 			"<img src='" + imageUrl + "'>" +
-			ColorBox.getBaseAndAccentColor(colors).map(function (color, i) {
+			ColorBox.getBaseAndAccentColor(colors).map((color, i) => {
 				var text = (i == 0 ? "base color" : "accent color")
 				return ColorBoxDebugger.renderColor(color, text);
 			}).join("") +
@@ -28,7 +28,7 @@ var ColorBoxDebugger = {
 		"</div>"
 	},
 
-	renderTestbed: function(imageUrls) {
+	renderTestbed: (imageUrls) => {
 		var output = "<html><head>"+
 			"<style>"+
 			" body { color: #fff; font-size: 13px; font-family: Arial; "+
@@ -44,20 +44,23 @@ var ColorBoxDebugger = {
 			"</head><body>";
 		var unresolvedImages = imageUrls.length;
 
-		imageUrls.forEach(function (imageUrl) {
-			ColorBox.requestDominantColorsFromImageByUrl(imageUrl, function (err, colors) {
-				if (err) return console.error("Error with " + imageUrl + "\n", err);
-				unresolvedImages--;
-				output += ColorBoxDebugger.renderTestColumn(imageUrl, colors)
+		imageUrls.forEach((imageUrl) => {
+			ColorBox.requestDominantColorsFromImageByUrl(imageUrl)
+				.then((colors) => {
+					unresolvedImages--;
+					output += ColorBoxDebugger.renderTestColumn(imageUrl, colors);
 
-				if (unresolvedImages == 0) {
-					output += "</body></html>";
-					fs.writeFile("./index.html", output, function(err) {
-						if (err) return console.error(err);
-						console.log("Rendered.");
-					});
-				}
-			})
+					if (unresolvedImages == 0) {
+						output += "</body></html>";
+						fs.writeFile("./index.html", output, (err) => {
+							if (err) return console.error(err);
+							console.log("Rendered.");
+						});
+					}
+				})
+				.catch(() => {
+					console.error("Error with " + imageUrl + "\n", err);
+				});
 		})
 	}
 }
