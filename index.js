@@ -84,7 +84,7 @@ var ColorBox = {
 				.pipe(fs.createWriteStream(tempFilename))
 				.on('close', () => {
 					fs.readFile(tempFilename, (err, data) => {
-						fs.unlink(tempFilename);
+						fs.unlink(tempFilename, () => {});
 
 						if (err) {
 							console.error('Error reading image file...', imageUrl, err);
