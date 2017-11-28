@@ -96,7 +96,11 @@ var ColorBox = {
 							colors: 256
 						}).map(color => [ color.r, color.g, color.b ]);
 
-						resolve(quantizedColors);
+						if (quantizedColors) {
+							resolve(quantizedColors);
+						} else {
+							reject();
+						}
 					});
 				});
 		});
