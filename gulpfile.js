@@ -1,7 +1,7 @@
 var gulp = require('gulp');
 var gutil = require('gutil')
 var spawn = require('child_process').spawn;
-var browserSync = require("browser-sync").create();
+var browserSync = require('browser-sync').create();
 
 const render = (cb) => {
 	var nodeProcess = spawn('node', ['debug.js'], { stdio: 'inherit' });
@@ -14,7 +14,7 @@ const render = (cb) => {
 };
 
 const reload = (cb) => {
-	browserSync.reload("index.html");
+	browserSync.reload('index.html');
 	cb();
 }
 
@@ -24,6 +24,6 @@ gulp.task('debug', function () {
 		server: '.'
 	});
 
-	gulp.watch("index.html", reload);
-	gulp.watch(["index.js", "debug.js"], gulp.series(render, reload));
+	gulp.watch('index.html', reload);
+	gulp.watch(['index.js', 'debug.js'], gulp.series(render, reload));
 });

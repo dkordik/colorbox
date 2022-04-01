@@ -4,7 +4,7 @@ A toolbox for zeroing in on types of color in an image. Primarily developed to s
 
 ---
 
-### Setup on macOS
+### Setup
 
 - `npm install`
 

@@ -1,7 +1,4 @@
-var fs = require('fs');
-var request = require('request');
 var quantize = require('quantize');
-var crypto = require('crypto');
 var Jimp = require('jimp');
 
 var ColorBox = {
@@ -123,7 +120,6 @@ var ColorBox = {
 
 	getAccentColor: (colors) => {
 		var colorsByLumSat = ColorBox.sortByLumSat(colors);
-		var baseColor = ColorBox.getBaseColor(colors);
 		return colorsByLumSat[0];
 	},
 
@@ -137,7 +133,6 @@ var ColorBox = {
 	requestBaseAndAccentColorFromImageByUrl: (imageUrl) => {
 		return ColorBox.requestDominantColorsFromImageByUrl(imageUrl)
 			.then((colors) => {
-				var baseAndAccentColor = ColorBox.getBaseAndAccentColor(colors);
 				return ColorBox.getBaseAndAccentColor(colors);
 			})
 			.catch((err) => {
