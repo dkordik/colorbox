@@ -1,6 +1,6 @@
 {
   "name": "colorbox",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "description": "A toolbox for zeroing in on types of color in an image",
   "main": "index.js",
   "scripts": {
