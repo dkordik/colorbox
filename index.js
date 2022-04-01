@@ -1,7 +1,8 @@
 var fs = require('fs');
 var request = require('request');
-var imagemagick = require('imagemagick-native');
+var quantize = require('quantize');
 var crypto = require('crypto');
+var Jimp = require('jimp');
 
 var ColorBox = {
 
@@ -78,31 +79,41 @@ var ColorBox = {
 
 	requestDominantColorsFromImageByUrl: (imageUrl) => {
 		return new Promise((resolve, reject) => {
-			var tempFilename = ".temp-" + crypto.createHash('md5').update(imageUrl).digest('hex');
 
-			request(imageUrl)
-				.pipe(fs.createWriteStream(tempFilename))
-				.on('close', () => {
-					fs.readFile(tempFilename, (err, data) => {
-						fs.unlink(tempFilename, () => {});
+			Jimp.read(imageUrl, function (err, image) {
+				if (err) {
+					console.error('Error reading image file...', imageUrl, err);
+					reject(err);
+				}
 
-						if (err) {
-							console.error('Error reading image file...', imageUrl, err);
-							reject(err);
-						}
+				const pixelArray = [];
 
-						var quantizedColors = imagemagick.quantizeColors({
-							srcData: data,
-							colors: 256
-						}).map(color => [ color.r, color.g, color.b ]);
+				image.scan(
+					0,
+					0,
+					image.bitmap.width,
+					image.bitmap.height,
+					function (x, y, idx) {
+            // straight outta the jimp doc!
+            // https://github.com/oliver-moran/jimp/tree/master/packages/jimp#low-level-manipulation
 
-						if (quantizedColors) {
-							resolve(quantizedColors);
-						} else {
-							reject();
-						}
-					});
-				});
+            var r = this.bitmap.data[idx + 0];
+            var g = this.bitmap.data[idx + 1];
+            var b = this.bitmap.data[idx + 2];
+
+            pixelArray.push([r, g, b]);
+          }
+				);
+
+				var quantizedColors = quantize(pixelArray, 256).palette();
+
+				if (quantizedColors) {
+					resolve(quantizedColors);
+				} else {
+					reject();
+				}
+
+			});
 		});
 	},
 

@@ -6,7 +6,6 @@ A toolbox for zeroing in on types of color in an image. Primarily developed to s
 
 ### Setup on macOS
 
-- [Install ImageMagick](https://github.com/elad/node-imagemagick-native/issues/161#issuecomment-304498227)
 - `npm install`
 
 ---
