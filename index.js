@@ -80,7 +80,7 @@ var ColorBox = {
 			Jimp.read(imageUrl, function (err, image) {
 				if (err) {
 					console.error('Error reading image file...', imageUrl, err);
-					reject(err);
+					return reject(err);
 				}
 
 				const pixelArray = [];
@@ -105,9 +105,9 @@ var ColorBox = {
 				var quantizedColors = quantize(pixelArray, 256).palette();
 
 				if (quantizedColors) {
-					resolve(quantizedColors);
+					return resolve(quantizedColors);
 				} else {
-					reject();
+					return reject();
 				}
 
 			});
